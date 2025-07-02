@@ -6,6 +6,7 @@ from helper.form_validation import get_form_data
 import msgpack
 from datetime import datetime
 from flasgger import swag_from
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 books_endpoints = Blueprint('books', __name__)
@@ -39,6 +40,7 @@ def read_msgpack():
 
 @books_endpoints.route('/read', methods=['GET'])
 @swag_from('docs/read_books.yml')
+@jwt_required()
 def read():
     """Routes for module get list books"""
     connection = get_connection()
@@ -47,8 +49,21 @@ def read():
     cursor.execute(select_query)
     results = cursor.fetchall()
     cursor.close()  # Close the cursor after query execution
+    connection.close()  # Close the connection after use
     return jsonify({"message": "OK", "datas": results}), 200
 
+@books_endpoints.route('/read/<product_id>', methods=['GET'])
+def read_one(product_id):
+    """Routes for module get one book"""
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    select_query = "SELECT * FROM tb_books WHERE id_books = %s"
+    update_request = (product_id,)
+    cursor.execute(select_query, update_request)
+    results = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    return jsonify({"message": "OK", "data": results}), 200
 
 @books_endpoints.route('/create', methods=['POST'])
 def create():
@@ -65,8 +80,9 @@ def create():
     connection.commit()  # Commit changes to the database
     cursor.close()
     new_id = cursor.lastrowid  # Get the newly inserted book's ID\
+    connection.close()  # Close the connection after use
     if new_id:
-        return jsonify({"title": title, "message": "Inserted", "id_books": new_id}), 201
+        return jsonify({"message": "Inserted", "datas": {"id_books": new_id, "title": title, "description":description }}), 201
     return jsonify({"message": "Cant Insert Data"}), 500
 
 
@@ -84,6 +100,7 @@ def update(product_id):
     cursor.execute(update_query, update_request)
     connection.commit()
     cursor.close()
+    connection.close()
     data = {"message": "updated", "id_books": product_id}
     return jsonify(data), 200
 
@@ -99,6 +116,7 @@ def delete(product_id):
     cursor.execute(delete_query, delete_id)
     connection.commit()
     cursor.close()
+    connection.close()
     data = {"message": "Data deleted", "id_books": product_id}
     return jsonify(data)
 

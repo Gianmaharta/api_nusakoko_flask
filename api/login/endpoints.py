@@ -20,7 +20,7 @@ def login():
 
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    query = "SELECT * FROM users WHERE username = %s"
+    query = "SELECT * FROM users WHERE username = %s AND deleted_at IS NULL"
     request_query = (username,)
     cursor.execute(query, request_query)
     user = cursor.fetchone()
@@ -40,17 +40,14 @@ def login():
 def register():
     """Routes for register"""
     username = request.form['username']
-    email = request.form['email'] if 'email' in request.form else None
-    if not username or not email:
-        return jsonify({"msg": "Username and email are required"}), 400
     password = request.form['password']
     # To hash a password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO users (username, email, password) values (%s, %s, %s)"
-    request_insert = (username, email, hashed_password)
+    insert_query = "INSERT INTO users (username, password) values (%s, %s)"
+    request_insert = (username, hashed_password)
     cursor.execute(insert_query, request_insert)
     connection.commit()
     cursor.close()

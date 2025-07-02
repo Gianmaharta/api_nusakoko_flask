@@ -16,5 +16,5 @@ def get_data():
     current_user = get_jwt_identity()
     roles = get_roles()
     return jsonify({"message": "OK",
-                    "user_logged": current_user['username'],
+                    "user_logged": current_user,
                     "roles": roles}), 200
