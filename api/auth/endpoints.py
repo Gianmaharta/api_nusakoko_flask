@@ -20,7 +20,7 @@ def login():
 
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
-    query = "SELECT * FROM users WHERE username = %s"
+    query = "SELECT * FROM users WHERE username = %s AND deleted_at IS NULL"
     request_query = (username,)
     cursor.execute(query, request_query)
     user = cursor.fetchone()
@@ -29,11 +29,19 @@ def login():
     if not user or not bcrypt.check_password_hash(user.get('password'), password):
         return jsonify({"msg": "Bad username or password"}), 401
 
+    role = user.get('role', 'user')  # default ke 'user' jika tidak ada
     access_token = create_access_token(
-        identity=str({'username': str(username)}), additional_claims={'roles': "add_your_roles"})
+        identity=str({'username': username, 'role': role}),
+        additional_claims={'roles': role}
+    )
     decoded_token = decode_token(access_token)
     expires = decoded_token['exp']
-    return jsonify({"access_token": access_token, "expires_in": expires, "type": "Bearer"})
+    return jsonify({
+        "access_token": access_token,
+        "expires_in": expires,
+        "type": "Bearer",
+        "role": role
+    })
 
 
 @auth_endpoints.route('/register', methods=['POST'])
@@ -46,11 +54,11 @@ def register():
     password = request.form['password']
     # To hash a password
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-
+    role = "user"
     connection = get_connection()
     cursor = connection.cursor()
-    insert_query = "INSERT INTO users (username, email, password) values (%s, %s, %s)"
-    request_insert = (username, email, hashed_password)
+    insert_query = "INSERT INTO users (username, email, password, role) values (%s, %s, %s, %s)"
+    request_insert = (username, email, hashed_password, role)
     cursor.execute(insert_query, request_insert)
     connection.commit()
     cursor.close()
