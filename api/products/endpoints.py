@@ -95,29 +95,61 @@ def create_product():
 
 @products_blueprint.route('/<product_id>', methods=['PUT'])
 def update_product(product_id):
-    """Endpoint untuk update produk."""
+    """Endpoint untuk update produk, termasuk gambar (opsional)."""
+    
     data = request.form
+    conn = get_db_connection()
+    if conn is None: return jsonify({"error": "DB connection failed"}), 500
+    cursor = conn.cursor(dictionary=True)
+
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        # 1. Ambil URL gambar yang sekarang ada di database
+        cursor.execute("SELECT image_url FROM products WHERE id = %s", (product_id,))
+        product = cursor.fetchone()
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+        
+        current_image_url = product['image_url']
+
+        # 2. Cek apakah ada file gambar baru yang dikirim
+        if 'product_image' in request.files:
+            file = request.files['product_image']
+            # Pastikan file benar-benar dipilih
+            if file and file.filename != '':
+                # Proses dan simpan file gambar baru
+                filename = secure_filename(file.filename)
+                unique_filename = f"{int(time.time())}_{filename}"
+                file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+                file.save(file_path)
+                
+                # Buat URL baru untuk disimpan ke database
+                current_image_url = f"{request.host_url}{file_path}"
+                
+                # (Opsional tapi bagus) Hapus file gambar lama untuk menghemat ruang
+                # Kode ini perlu penyesuaian path jika server production berbeda
+                old_image_path_part = product['image_url'].split('/')[-3:]
+                old_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], '..', *old_image_path_part)
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+
+        # 3. Siapkan query UPDATE
         query = """
             UPDATE products SET name=%s, sku=%s, description=%s, price=%s, stock_quantity=%s,
             coir_weight_grams=%s, image_url=%s, is_active=%s WHERE id=%s
         """
         values = (
-            data.get('name'),
-            data.get('sku'),
-            data.get('description'),
-            data.get('price'),
-            data.get('stock_quantity'),
+            data.get('name'), data.get('sku'), data.get('description'),
+            data.get('price'), data.get('stock_quantity'),
             data.get('coir_weight_grams', 10),
-            data.get('image_url'),
+            current_image_url, # Gunakan URL baru jika ada, atau URL lama jika tidak
             data.get('is_active', 1),
             product_id
         )
+        
         cursor.execute(query, values)
         conn.commit()
-        return jsonify({"message": "Product updated"})
+        return jsonify({"message": "Product updated successfully", "image_url": current_image_url})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
