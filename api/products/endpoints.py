@@ -2,22 +2,20 @@
 
 from flask import Blueprint, jsonify, current_app, request
 import mysql.connector
+import os
+import time
+from werkzeug.utils import secure_filename
+from app import db_pool
 
 # Ganti nama blueprint agar spesifik
 products_blueprint = Blueprint('products', __name__)
 
 def get_db_connection():
-    """Fungsi helper untuk membuat koneksi ke database dari config."""
+    """Fungsi helper untuk MEMINJAM koneksi dari pool."""
     try:
-        conn = mysql.connector.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB']
-        )
-        return conn
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
+        return db_pool.get_connection()
+    except Exception as e:
+        print(f"Error getting connection from pool: {e}")
         return None
 
 @products_blueprint.route('/', methods=['GET'])
@@ -42,22 +40,53 @@ def get_products():
 
 @products_blueprint.route('/', methods=['POST'])
 def create_product():
-    """Endpoint untuk menambah produk baru."""
-    data = request.form
+    """Endpoint untuk menambah produk baru dengan upload gambar."""
+    
+    # 1. Cek apakah ada file yang dikirim
+    if 'product_image' not in request.files:
+        return jsonify({"error": "No image file part"}), 400
+    
+    file = request.files['product_image']
+    
+    # 2. Cek apakah nama file tidak kosong
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    conn = get_db_connection()
+    if conn is None: return jsonify({"error": "DB connection failed"}), 500
+    cursor = conn.cursor()
+    
     try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+        # 3. Proses dan simpan file gambar
+        if file:
+            # Mengamankan nama file dari karakter berbahaya
+            filename = secure_filename(file.filename)
+            # Membuat nama file unik dengan timestamp untuk menghindari duplikat
+            unique_filename = f"{int(time.time())}_{filename}"
+            # Path lengkap untuk menyimpan file
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(file_path)
+            
+            # 4. Membuat URL yang bisa diakses dari frontend
+            # request.host_url akan menghasilkan sesuatu seperti 'http://127.0.0.1:5000/'
+            image_url = f"{request.host_url}{file_path}"
+        
+        # 5. Ambil data lain dari form dan simpan ke database
+        data = request.form
         query = """
             INSERT INTO products (name, sku, description, price, stock_quantity, coir_weight_grams, image_url, is_active)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         values = (
             data['name'], data['sku'], data['description'], data['price'],
-            data['stock_quantity'], data.get('coir_weight_grams', 10), data['image_url'], data.get('is_active', 1)
+            data['stock_quantity'], data.get('coir_weight_grams', 10), 
+            image_url, # Gunakan URL yang sudah kita buat
+            data.get('is_active', 1)
         )
         cursor.execute(query, values)
         conn.commit()
-        return jsonify({"message": "Product created"}), 201
+        return jsonify({"message": "Product created successfully", "image_url": image_url}), 201
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

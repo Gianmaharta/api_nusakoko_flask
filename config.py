@@ -18,3 +18,5 @@ class Config:
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
     MYSQL_DB = os.getenv('MYSQL_DB', 'nusakoko')
+
+    UPLOAD_FOLDER = 'static/uploads/products'
