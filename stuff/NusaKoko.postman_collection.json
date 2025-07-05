@@ -1,0 +1,513 @@
+{
+	"info": {
+		"_postman_id": "bc5d0f51-832e-406e-ac3b-9762e1f6ad4d",
+		"name": "NusaKoko",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39701608"
+	},
+	"item": [
+		{
+			"name": "authentication",
+			"item": [
+				{
+					"name": "/api/nusakoko/auth/login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "gian maharta",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/auth/login",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/auth/register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "gian maharta",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "gian@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "12345678",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/auth/register",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "products",
+			"item": [
+				{
+					"name": "/api/nusakoko/products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/products",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/products",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Kantong Plastik Coklat",
+									"type": "text"
+								},
+								{
+									"key": "sku",
+									"value": "MNK-002",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Kantong plastik ini terbuat dari serabut kelapa dan bahan biodegradable, sehingga lebih ramah lingkungan dibandingkan plastik konvensional. Serabut kelapa memberikan kekuatan tambahan, membuat kantong tidak mudah sobek namun tetap mudah terurai secara alami. ",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "10000",
+									"type": "text"
+								},
+								{
+									"key": "stock_quantity",
+									"value": "200",
+									"type": "text"
+								},
+								{
+									"key": "product_image",
+									"type": "file",
+									"src": "/C:/Users/Gian maharta/Downloads/Rectangle 9.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/products",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/products/:id",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Mangkok Plastik",
+									"type": "text"
+								},
+								{
+									"key": "sku",
+									"value": "MNK-002",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Mangkok Serabut Kelapa dari NusaKoko adalah jawaban kami untuk kebutuhan wadah makanan yang tidak hanya praktis, tetapi juga berkontribusi bagi kelestarian bumi. Terbuat dari campuran bioplastik dan serabut kelapa alami, mangkok ini hadir dengan desain modern, kuat, dan tentu saja ramah lingkungan.",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "15000",
+									"type": "text"
+								},
+								{
+									"key": "stock_quantity",
+									"value": "49",
+									"type": "text"
+								},
+								{
+									"key": "image_url",
+									"value": "test image",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/products/2",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"products",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/products/:id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/products/2",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"products",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "orders",
+			"item": [
+				{
+					"name": "/api/nusakoko/orders",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Mangkok Plastik",
+									"type": "text"
+								},
+								{
+									"key": "sku",
+									"value": "MNK-001",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Mangkok Serabut Kelapa dari NusaKoko adalah jawaban kami untuk kebutuhan wadah makanan yang tidak hanya praktis, tetapi juga berkontribusi bagi kelestarian bumi. Terbuat dari campuran bioplastik dan serabut kelapa alami, mangkok ini hadir dengan desain modern, kuat, dan tentu saja ramah lingkungan.",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "15000",
+									"type": "text"
+								},
+								{
+									"key": "stock_quantity",
+									"value": "50",
+									"type": "text"
+								},
+								{
+									"key": "image_url",
+									"value": "test image",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders/:id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders/1",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "shipping_address",
+									"value": "Jalan Raya Kuta No. 123, Badung, Bali",
+									"type": "text"
+								},
+								{
+									"key": "items_json",
+									"value": "[{\"product_id\": 1, \"quantity\": 2}]",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders/<order_id>/confirm-payment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders/6/confirm-payment",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders",
+								"6",
+								"confirm-payment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders/<order_id>/process",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "shipping_address",
+									"value": "Jalan Raya Kuta No. 123, Badung, Bali",
+									"type": "text"
+								},
+								{
+									"key": "items_json",
+									"value": "[{\"product_id\": 1, \"quantity\": 2}]",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders/6/process",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders",
+								"6",
+								"process"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders/<order_id>/ship",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "shipping_address",
+									"value": "Jalan Raya Kuta No. 123, Badung, Bali",
+									"type": "text"
+								},
+								{
+									"key": "items_json",
+									"value": "[{\"product_id\": 1, \"quantity\": 2}]",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders/5/ship",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders",
+								"5",
+								"ship"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/api/nusakoko/orders/<order_id>",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "shipping_address",
+									"value": "Jalan Raya Kuta No. 123, Badung, Bali",
+									"type": "text"
+								},
+								{
+									"key": "items_json",
+									"value": "[{\"product_id\": 1, \"quantity\": 2}]",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{flask_local}}/api/nusakoko/orders/4",
+							"host": [
+								"{{flask_local}}"
+							],
+							"path": [
+								"api",
+								"nusakoko",
+								"orders",
+								"4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "flask_local",
+			"value": "http://127.0.0.1:5000"
+		}
+	]
+}
