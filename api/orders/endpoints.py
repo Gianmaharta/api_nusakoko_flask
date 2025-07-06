@@ -98,11 +98,8 @@ def get_order_details(order_id):
 # Catatan: Endpoint ini disederhanakan. Idealnya menggunakan transaksi database.
 @orders_blueprint.route('/', methods=['POST'])
 def create_order():
-    """Endpoint untuk membuat pesanan baru dari form-data."""
-    
-    # 1. Baca data dari request.form, bukan request.get_json()
+    """Endpoint untuk membuat pesanan baru (alamat diambil otomatis dari user)."""
     form_data = request.form
-    
     conn = get_db_connection()
     if conn is None: return jsonify({"error": "DB connection failed"}), 500
     cursor = conn.cursor(dictionary=True)
@@ -110,42 +107,54 @@ def create_order():
     try:
         conn.start_transaction()
 
-        # 2. Ambil string JSON dari form dan ubah menjadi list Python
-        items_json_string = form_data.get('items_json')
-        if not items_json_string:
-            raise ValueError("`items_json` is required in form-data.")
-        items = json.loads(items_json_string) # Menggunakan json.loads()
+        # Ambil user_id dari form
+        user_id = form_data.get('user_id')
+        if not user_id:
+            raise ValueError("`user_id` is required.")
 
-        # Mulai dari sini, logikanya sama seperti sebelumnya
+        # 1. Ambil alamat user dari database berdasarkan user_id
+        cursor.execute("SELECT address FROM users WHERE id_users = %s", (user_id,))
+        user_data = cursor.fetchone()
+        
+        # 2. Lakukan validasi
+        if not user_data:
+            raise ValueError(f"User dengan id {user_id} tidak ditemukan.")
+        if not user_data['address']:
+            raise ValueError("Alamat pengiriman belum diatur di profil user. Silakan lengkapi profil terlebih dahulu.")
+        
+        # 3. Simpan alamat yang valid untuk digunakan nanti
+        shipping_address_from_db = user_data['address']
+
+        # 4. Proses item-item dari 'items_json'
+        items_json_string = form_data.get('items_json')
+        if not items_json_string: raise ValueError("`items_json` is required.")
+        items = json.loads(items_json_string)
+        
         total_amount = 0
         order_items_to_insert = []
 
+        # Loop untuk validasi stok, harga, dan pengurangan stok (logika ini tetap sama)
         for item in items:
             product_id = item['product_id']
             quantity_ordered = item['quantity']
-
             cursor.execute("SELECT price, stock_quantity FROM products WHERE id = %s FOR UPDATE", (product_id,))
             product = cursor.fetchone()
-
-            if not product:
-                raise ValueError(f"Produk dengan id {product_id} tidak ditemukan.")
-            if product['stock_quantity'] < quantity_ordered:
-                raise ValueError(f"Stok untuk produk id {product_id} tidak mencukupi.")
-
+            if not product: raise ValueError(f"Produk dengan id {product_id} tidak ditemukan.")
+            if product['stock_quantity'] < quantity_ordered: raise ValueError(f"Stok untuk produk id {product_id} tidak mencukupi.")
             price_per_item = product['price']
             total_amount += (price_per_item * quantity_ordered)
             order_items_to_insert.append((product_id, quantity_ordered, price_per_item))
-
             new_stock = product['stock_quantity'] - quantity_ordered
             cursor.execute("UPDATE products SET stock_quantity = %s WHERE id = %s", (new_stock, product_id))
 
+        # 5. Insert ke tabel orders menggunakan alamat dari database
         order_query = "INSERT INTO orders (user_id, order_number, total_amount, shipping_address) VALUES (%s, %s, %s, %s)"
         import time
         order_number = f"NKK-{int(time.time())}"
-        # Ambil user_id dan shipping_address dari form_data
-        cursor.execute(order_query, (form_data['user_id'], order_number, total_amount, form_data['shipping_address']))
+        cursor.execute(order_query, (user_id, order_number, total_amount, shipping_address_from_db))
         order_id = cursor.lastrowid
 
+        # 6. Insert ke tabel order_items (logika ini tetap sama)
         item_query = "INSERT INTO order_items (order_id, product_id, quantity, price_per_item) VALUES (%s, %s, %s, %s)"
         items_with_order_id = [(order_id, *item_data) for item_data in order_items_to_insert]
         cursor.executemany(item_query, items_with_order_id)

@@ -20,3 +20,5 @@ class Config:
     MYSQL_DB = os.getenv('MYSQL_DB', 'nusakoko')
 
     UPLOAD_FOLDER = 'static/uploads/products'
+
+    AVATAR_UPLOAD_FOLDER = 'static/uploads/avatars'
