@@ -40,6 +40,7 @@ except mysql.connector.Error as err:
 from api.auth.endpoints import auth_endpoints
 from api.products.endpoints import products_blueprint
 from api.orders.endpoints import orders_blueprint
+from api.cart.endpoints import cart_blueprint
 # from api.books.endpoints import books_endpoints # Hapus atau aktifkan jika perlu
 # from api.data_protected.endpoints import protected_endpoints # Hapus atau aktifkan jika perlu
 
@@ -49,6 +50,7 @@ app.register_blueprint(auth_endpoints, url_prefix='/api/nusakoko/auth')
 app.register_blueprint(products_blueprint, url_prefix='/api/nusakoko/products')
 app.register_blueprint(orders_blueprint, url_prefix='/api/nusakoko/orders')
 app.register_blueprint(static_file_server, url_prefix='/static/')
+app.register_blueprint(cart_blueprint, url_prefix='/api/nusakoko/cart')
 
 
 # 6. Jalankan Aplikasi

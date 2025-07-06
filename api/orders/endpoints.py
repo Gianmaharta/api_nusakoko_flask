@@ -3,6 +3,8 @@ import mysql.connector
 import json
 import random
 from app import db_pool
+from flask_cors import cross_origin
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Buat blueprint baru untuk orders
 orders_blueprint = Blueprint('orders', __name__)
@@ -97,6 +99,7 @@ def get_order_details(order_id):
 # == CREATE (POST) ==
 # Catatan: Endpoint ini disederhanakan. Idealnya menggunakan transaksi database.
 @orders_blueprint.route('/', methods=['POST'])
+@cross_origin(origins=["http://localhost:5173"])
 def create_order():
     """Endpoint untuk membuat pesanan baru (alamat diambil otomatis dari user)."""
     form_data = request.form
@@ -329,6 +332,44 @@ def cancel_order(order_id):
             return jsonify({"error": "Order not found"}), 404
 
         return jsonify({"message": f"Order {order_id} has been cancelled."})
+    except mysql.connector.Error as err:
+        return jsonify({"error": str(err)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Endpoint baru untuk mengambil pesanan milik user yang sedang login
+@orders_blueprint.route('/my-orders', methods=['GET'])
+@jwt_required()
+def get_my_orders():
+    """Endpoint untuk mengambil semua data pesanan milik user yang sedang login."""
+    
+    current_user_id = get_jwt_identity() # Ambil ID dari token
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+    
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Query yang sama dengan get_orders, tapi dengan filter WHERE
+        query = """
+            SELECT
+                o.id, o.order_number, o.created_at AS tanggal,
+                u.username AS pelanggan, o.total_amount AS total_bayar,
+                o.payment_status, o.order_status, o.tracking_number,
+                GROUP_CONCAT(p.name SEPARATOR ', ') AS produk
+            FROM orders AS o
+            JOIN users AS u ON o.user_id = u.id_users
+            LEFT JOIN order_items AS oi ON o.id = oi.order_id
+            LEFT JOIN products AS p ON oi.product_id = p.id
+            WHERE o.user_id = %s  -- <-- Filter berdasarkan user yang login
+            GROUP BY o.id
+            ORDER BY o.created_at DESC;
+        """
+        cursor.execute(query, (current_user_id,))
+        orders = cursor.fetchall()
+        return jsonify(orders)
+        
     except mysql.connector.Error as err:
         return jsonify({"error": str(err)}), 500
     finally:
