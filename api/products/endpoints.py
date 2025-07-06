@@ -6,6 +6,7 @@ import os
 import time
 from werkzeug.utils import secure_filename
 from app import db_pool
+from flask_cors import cross_origin
 
 # Ganti nama blueprint agar spesifik
 products_blueprint = Blueprint('products', __name__)
@@ -19,6 +20,7 @@ def get_db_connection():
         return None
 
 @products_blueprint.route('/', methods=['GET'])
+@cross_origin(origins=["http://localhost:5173"])
 def get_products():
     """Endpoint untuk mengambil semua data produk."""
     conn = get_db_connection()

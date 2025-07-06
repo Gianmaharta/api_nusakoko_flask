@@ -16,7 +16,7 @@ load_dotenv()
 # 2. Inisialisasi Aplikasi Flask
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 Swagger(app)
 jwt.init_app(app)
 
