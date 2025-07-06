@@ -151,3 +151,37 @@ def update_profile():
     finally:
         cursor.close()
         conn.close()
+
+# Tambahkan fungsi baru ini di dalam api/auth/endpoints.py
+@auth_endpoints.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    """Endpoint untuk mengambil data profil user yang sedang login."""
+    
+    current_user_id = get_jwt_identity()
+    
+    conn = get_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+        
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Query untuk mengambil data user, TANPA password
+        query = """
+            SELECT id_users, username, email, role, address, profile_photo_url, created_at 
+            FROM users 
+            WHERE id_users = %s
+        """
+        cursor.execute(query, (current_user_id,))
+        user = cursor.fetchone()
+
+        if not user:
+            return jsonify({"error": "User profile not found for the provided token"}), 404
+        
+        return jsonify(user)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
