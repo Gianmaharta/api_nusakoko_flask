@@ -375,3 +375,50 @@ def get_my_orders():
     finally:
         cursor.close()
         conn.close()
+
+@orders_blueprint.route('/<order_id>/payment-status', methods=['PUT'])
+@cross_origin(origins=["http://localhost:5173"])
+def update_payment_status(order_id):
+    """Endpoint untuk update payment_status pada order tertentu."""
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+    cursor = conn.cursor()
+    try:
+        data = request.get_json()
+        payment_status = data.get('payment_status')
+        if not payment_status:
+            return jsonify({"error": "payment_status is required"}), 400
+        cursor.execute("UPDATE orders SET payment_status = %s WHERE id = %s", (payment_status, order_id))
+        conn.commit()
+        return jsonify({"message": "Payment status updated"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
+
+@orders_blueprint.route('/<order_id>/order-status', methods=['PUT'])
+@cross_origin(origins=["http://localhost:5173"])
+def update_order_status(order_id):
+    print("REQUEST DATA:", request.data)
+    print("REQUEST JSON:", request.get_json())
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "DB connection failed"}), 500
+    cursor = conn.cursor()
+    try:
+        data = request.get_json()
+        order_status = data.get('order_status')
+        if not order_status:
+            return jsonify({"error": "order_status is required"}), 400
+        cursor.execute("UPDATE orders SET order_status = %s WHERE id = %s", (order_status, order_id))
+        conn.commit()
+        return jsonify({"message": "Order status updated"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 400
+    finally:
+        cursor.close()
+        conn.close()
