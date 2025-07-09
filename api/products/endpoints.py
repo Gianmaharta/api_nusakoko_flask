@@ -173,3 +173,28 @@ def soft_delete_product(product_id):
     finally:
         cursor.close()
         conn.close()
+
+@products_blueprint.route('/search', methods=['GET'])
+def search_products():
+    """Endpoint untuk mencari produk berdasarkan nama."""
+    query = request.args.get('q', '') # Ambil query dari parameter URL ?q=...
+
+    if len(query) < 1: # Jangan cari jika query terlalu pendek
+        return jsonify([])
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Gunakan LIKE dengan wildcard % untuk mencari nama yang mengandung query
+        sql_query = "SELECT id, name, price, image_url FROM products WHERE name LIKE %s AND is_active = TRUE LIMIT 5"
+        # Tambahkan wildcard % di sekitar query
+        search_term = f"%{query}%"
+        
+        cursor.execute(sql_query, (search_term,))
+        products = cursor.fetchall()
+        return jsonify(products)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
