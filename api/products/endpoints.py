@@ -198,3 +198,23 @@ def search_products():
     finally:
         cursor.close()
         conn.close()
+
+@products_blueprint.route('/<product_id>', methods=['GET'])
+def get_product_by_id(product_id):
+    """Endpoint untuk mengambil detail produk berdasarkan ID."""
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+    cursor = conn.cursor(dictionary=True)
+    try:
+        query = "SELECT id, name, sku, description, price, stock_quantity, coir_weight_grams, image_url, is_active FROM products WHERE id = %s AND is_active = TRUE"
+        cursor.execute(query, (product_id,))
+        product = cursor.fetchone()
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+        return jsonify(product)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
